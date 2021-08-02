@@ -1,6 +1,7 @@
 # Digital Silo
 
 Digital Silo collects stateless tasks, aka **Grains**, and executes them in a scalable serverless environment on the Microsoft Azure Cloud technology. It accelerates the steps of making an application serverless-ready by eliminating the burden of infrastructure-driven implementation and letting developers concentrate on coding their business logic.
+
 ## Major components in high level
 
 Digital Silo consists of the following major components:
@@ -19,26 +20,42 @@ The serverless infrastructure is the entity that takes care of processing grains
 The SignalR Service provides a real-time communication channel between the client application interested in observing grains' status and the backend progress.
 
 ### High-Level Architecture diagram
+
 The following diagram depicts the infrastructure and the major components of Digital Silo:
 
 ![Digital Silo HLA Diagram](assets/Digital%20Silo%20HLA%20Diagram.svg)
 
 ## Developing Grains
+
 ### Environment
 
-A development environment is required to be able to develop grains. The development environment is the entire infrastructure of Digital Silo hosted on Azure and provisioned by a Terraform script found here. The service plans and the capacity of Azure services are at their minimal costs in the Terraform script. Should additional horsepower be required, higher-level SKUs can be incorporated in the Terraform script.
+A development environment is required to be able to develop and test the grains. The development environment is the entire infrastructure of Digital Silo hosted on Azure and provisioned by a Terraform script found [here](https://github.com/DigitalSilo/digitalsilo/tree/master/infrastructure). The service plans and the capacity of Azure services are at their minimal costs in the Terraform script. Should additional horsepower is required, one can incorporate higher-level SKUs in the Terraform script.
 
-### Grain
+#### Silo, the processing component
 
-A grain is a stateless component that encapsulates a specific business logic that runs throughout Digital Silo. A developer has to complete the following steps to prepare a grain to submit it to Digital Silo for processing:
-
-* Add a reference to DigitalSilo.Grains assembly
-* Implement `Grain<T>` abstract class to introduce a grain
-* Implement `GrainProcessor` abstract class where the logic should reside
-* Download the sample Xunit-powered test framework from this GitHub repo to test and debug the grain
-
-### Silo, the processing component
-
-The Terraform script provisions the entire Digital Silo infrastructure just within a few minutes on Azure. Once the infrastructure is ready, a storage account meant to retain the developed grains' DLLs becomes available. The infrastructure knows where to fetch and download the developed grains' DLLs from the storage and make them an integral part of the silo. The grains are ready and fully engaged in executing the business logic after receiving the respective payloads via Gateway.
+The Terraform script provisions the entire Digital Silo infrastructure just within a few minutes on Azure. Once the infrastructure is ready, a storage account to retain the developed grains' DLLs becomes available to the outside world. The infrastructure knows where to fetch and download the developed grains' DLLs from the storage and make them an integral part of the silo's infrastructure. At this point, the grains are ready and fully engaged in executing the business logic after receiving their respective payloads via Gateway.
 
 Optionally a client application in C# or typescript may subscribe to the provisioned signalR Service instance to listen to grains' progress status.
+
+#### Grain
+
+A grain is a stateless component that encapsulates a specific business logic that runs throughout Digital Silo. Please consult the following section to learn about the details of grain development steps.
+
+### Development steps
+
+#### Prerequisites 
+The following tools are required to start developing grains:
+Visual Studio 2019 (for Mac or Windows), or Visual Studio Code
+.net core 3.1 and its latest SDK
+Digital Silo instance running on Azure that the provided Terraform script can provision
+Digital Silo's `DigitalSilo.Grain` assembly is available to download from [this artifacts feed](https://pkgs.dev.azure.com/umplify/Grain/_packaging/DigitalSilo/nuget/v3/index.json)
+Xunit framework to compose unit tests and integration tests
+An optional [Xunit extension library](https://www.nuget.org/packages/Xunit.Microsoft.DependencyInjection/) is available here to help leverage dependency injection capability in writing Xunit integration tests
+
+#### Introducing a grain
+
+After adding a reference to `DigitalSilo.Grain` package, the following class that defines the basics of a grain becomes available to derive:
+
+```cs
+public class Grain<TResponse>
+```
