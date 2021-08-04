@@ -13,7 +13,7 @@ Digital Silo consists of the following major components:
 
 ## Features
 
-Gateway Web API is the entry point of the system to receive grains' payloads in JSON format. It has no role in running the business logic encapsulated in the grain. The only task that it carries out is to deliver the grains' payloads to the serverless infrastructure for further processing. However, it can manage a virtual queue of submitted grains' payloads as well. Developers can also define the grains' chaining keys in the payloads, and the Gateway can figures out how to line them up in a row to submit to the silo. The subsequent grain's payload in the queue is picked up and processed if its predecessor finishes successfully. Gateway will not send a grain's payload to the serverless part if its predecessor has already failed or terminated.
+Gateway Web API is the entry point of the system to receive grains' payloads in JSON format. It has no role in running the business logic encapsulated in the grain. The only task it carries out is to deliver the grains' payloads to the serverless infrastructure for further processing. However, it can manage a virtual queue of submitted grains' payloads as well. Developers can also define the grains' chaining keys in the payloads, and the Gateway can figures out how to line them up in a row to submit to the silo. The subsequent grain's payload in the queue is picked up and processed if its predecessor finishes successfully. Gateway will not send a grain's payload to the serverless part if its predecessor has already failed or terminated.
 
 The serverless infrastructure is the entity that takes care of processing grains statelessly. It can track the progress of grains and resumes their execution from the point where they left off if the grains fail due to any reason. Depending on the deployment pipeline's configuration, the serverless infrastructure can run on a consumption plan or a bit more real-time mode, i.e. premium plan when necessary.
 
@@ -33,7 +33,7 @@ A development environment is required to be able to develop and test the grains.
 
 #### Silo, the processing component
 
-The Terraform script provisions the entire Digital Silo infrastructure just within a few minutes on Azure. Once the infrastructure is ready, a storage account to retain the developed grains' DLLs becomes available to the outside world. The infrastructure knows where to fetch and download the developed grains' DLLs from the storage and make them an integral part of the silo's infrastructure. At this point, the grains are ready and fully engaged in executing the business logic after receiving their respective payloads via Gateway.
+The Terraform script provisions the entire Digital Silo infrastructure just within a few minutes on Azure. Once the infrastructure is ready, a storage account to retain the developed grains' DLLs becomes available to the outside world. The infrastructure knows where to fetch and download the developed grains' DLLs from the storage and turn them into an integral part of the silo's infrastructure. At this point, the grains are ready and fully engaged in executing the business logic after receiving their respective payloads via Gateway.
 
 Optionally a client application in C# or typescript may subscribe to the provisioned signalR Service instance to listen to grains' progress status.
 
@@ -54,8 +54,68 @@ An optional [Xunit extension library](https://www.nuget.org/packages/Xunit.Micro
 
 #### Introducing a grain
 
-After adding a reference to `DigitalSilo.Grain` package, the following class that defines the basics of a grain becomes available to derive:
+After adding a reference to the `DigitalSilo.Grain` package, the following class that defines the basics of a grain becomes available to inherit from:
 
 ```cs
-public class Grain<TResponse>
+public class Grain<TResponse> : Grain, IRequest<TResponse>
+where TResponse : Response, new()
 ```
+`TResponse` has to be an instance of `Response` abstract class defined in the `DigitalSilo.Grain.Abstracts` namespace.
+
+Let's imagine that we want to have the silo compute the perimeter of a rectangular. We will need a grain to define a rectangular and a respective response class where the computed perimeter is stored.
+
+```cs
+using DigitalSilo.Grain.Abstracts;
+using DigitalSilo.Grain;
+
+public class PerimeterResponse : Response
+{
+    public int Perimeter { get; set; }
+}
+
+public class RectangularGrain : Grain<PerimeterResponse>
+{
+    public int Length { get; set; }
+    public int Width { get; set; }
+}
+```
+
+We can even define a `record` to represent a rectangular object and use that object's instance in the grain definition per the following slightly-refactored rectangular grain definition:
+
+```cs
+public record Rectangular
+{
+    public int Length { get; set; }
+    public int Width { get; set; }
+}
+
+public class RectangularGrain : Grain<PerimeterResponse>
+{
+    public Rectangular Rectangular { get; set; }
+}
+```
+#### Implementing grain processor
+
+Processing a grain occurs in a separate class from the grain definition. To implement a processor class, one must derive the processor class from the following abstract class available in `DigitalSilo.Grain.Abstracts.Grain` namespace:
+
+```cs
+public abstract class GrainProcessor<TGrain, TResponse> : 
+where TGrain : Grain<TResponse>, new()
+where TResponse : Response, new()
+```
+So, the declaration of perimeter calculator class would look like the following example:
+
+```cs
+using DigitalSilo.Grain.Abstracts.Grain;
+
+public class RectangularPerimeterCalculator : GrainProcessor<RectangularGrain, PerimeterResponse>
+{
+}
+```
+The following two abstract methods have to be overridden in the derived grain processor:
+
+```cs
+protected abstract Task<TResponse> ProcessAsync(TGrain request, CancellationToken cancellationToken);
+protected abstract Task FinalizeAsync();
+```
+`ProcessAsync` is the method that usually carries the business logic, and `FinalizeAsync` is a method that can optionally be implemented. Usually, tasks like closing a network connection, removing unnecessary files, cleanups, etc., would happen in `FinalizeAsync()` method.
