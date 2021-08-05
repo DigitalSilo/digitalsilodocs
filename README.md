@@ -112,10 +112,26 @@ public class RectangularPerimeterCalculator : GrainProcessor<RectangularGrain, P
 {
 }
 ```
-The following two abstract methods have to be overridden in the derived grain processor:
+The following two abstract methods have to be overridden in the derived grain processor class:
 
 ```cs
 protected abstract Task<TResponse> ProcessAsync(TGrain request, CancellationToken cancellationToken);
 protected abstract Task FinalizeAsync();
 ```
-`ProcessAsync` is the method that usually carries the business logic, and `FinalizeAsync` is a method that can optionally be implemented. Usually, tasks like closing a network connection, removing unnecessary files, cleanups, etc., would happen in `FinalizeAsync()` method.
+`ProcessAsync` is the method that usually carries the business logic, and `FinalizeAsync` is a method that can optionally be implemented. Usually, tasks like closing a network connection, removing unnecessary files, cleanups, etc., would happen in `FinalizeAsync()` method. So, the implementation of `ProcessAsync` method to calculate the rectangular's perimeter would look like the following code snippet:
+
+```cs
+protected override Task<PerimeterResponse> ProcessAsync(RectangularGrain request, CancellationToken cancellationToken)
+{
+    var response = new PerimeterResponse
+    {
+        ResultCode = DigitalSilo.Grain.ResultCode.Success.GetCode()
+        Perimeter = 2 * request.Rectangular.Width + 2 * request.Rectangular.Length
+    };
+    return Task.FromResult(response);
+}
+```
+
+That's it! This pattern has illustrated how simple it is to define a grain and its associated processor. This pattern can easily be applied to more complex scenarios, e.g. database operations, sending emails, etc.
+
+#### Validating grains
