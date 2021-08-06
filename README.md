@@ -2,7 +2,7 @@
 
 Digital Silo collects stateless tasks, aka **Grains**, and executes them in a scalable serverless environment on the Microsoft Azure Cloud technology. It accelerates the steps of making an application serverless-ready by eliminating the burden of infrastructure-driven implementation and letting developers concentrate on coding their business logic.
 
-## Major components in high level
+## Major components in Digital Silo
 
 Digital Silo consists of the following major components:
 
