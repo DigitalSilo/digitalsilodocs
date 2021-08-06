@@ -60,7 +60,7 @@ After adding a reference to the `DigitalSilo.Grain` package, the following class
 public class Grain<TResponse> : Grain, IRequest<TResponse>
 where TResponse : Response, new()
 ```
-`TResponse` has to be an instance of `Response` abstract class defined in the `DigitalSilo.Grain.Abstracts` namespace.
+`TResponse` has to be an instance of the `Response` abstract class defined in the `DigitalSilo.Grain.Abstracts` namespace.
 
 Let's imagine that we want to have the silo compute the perimeter of a rectangular. We will need a grain to define a rectangular and a respective response class where the computed perimeter is stored.
 
@@ -135,3 +135,55 @@ protected override Task<PerimeterResponse> ProcessAsync(RectangularGrain request
 That's it! This pattern has illustrated how simple it is to define a grain and its associated processor. This pattern can easily be applied to more complex scenarios, e.g. database operations, sending emails, etc.
 
 #### Validating grains
+
+Digital Silo's validation mechanism has been constructed based on the FluentValidation library. One must complete the following two steps to have Digital Silo validate a grain's data:
+
+Step 1) The grain's validator class should inherit the following abstract class:
+
+```cs
+using DigitalSilo.Grain.Abstracts.Grain.Validators;
+public abstract class GrainValidator<TGrain>{ ... }
+```
+Step 2) The grain class should implement the following interface:
+
+```cs
+using FluentValidation;
+
+namespace DigitalSilo.Grain.Abstracts.Validators
+{
+    public interface IValidatorProvider<T>
+    where T : DigitalSilo.Grain.Grain
+    {
+        bool EnableAsyncValidation { get;  set; }
+        IValidator<T> GetValidator();
+    }
+}
+```
+
+So, the validator class of `RectangularGrain` will look like the following code snippet:
+
+```cs
+using FluentValidation;
+
+public class RectangularGrainValidator : GrainValidator<RectangularGrain>
+{
+    public RectangularGrainValidator()
+    : base()
+    {
+        RuleFor(grain => grain.Rectangular).NotNull();
+        RuleFor(grain => grain.Recyangular.Length).GreaterThan(0).When(grain => grain.Rectangular != default);
+        RuleFor(grain => grain.Recyangular.Width).GreaterThan(0).When(grain => grain.Rectangular != default);
+    }
+}
+```
+
+The initial definition of `RectangularGrain` class must be augmented per the following code snippet to accommodate validation:
+
+```cs
+public class RectangularGrain : Grain<PerimeterResponse>, IValidatorProvider<RectangularGrain>
+{
+    public Rectangular Rectangular { get; set; }
+    public bool EnableAsyncValidation { get;  set; } = false;
+    public IValidator<T> GetValidator() => new RectangularGrainValidator();
+}
+```
