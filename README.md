@@ -136,7 +136,7 @@ That's it! This pattern has illustrated how simple it is to define a grain and i
 
 #### Validating grains
 
-Digital Silo's validation mechanism has been constructed based on the FluentValidation library. One must complete the following two steps to have Digital Silo validate a grain's data:
+Digital Silo's validation mechanism has been constructed based on the [FluentValidation](https://fluentvalidation.net) library. One must complete the following two steps to have Digital Silo validate a grain's data:
 
 Step 1) The grain's validator class should inherit the following abstract class:
 
