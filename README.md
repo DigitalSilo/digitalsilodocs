@@ -275,3 +275,41 @@ public ProcessAttributes ProcessAttributes { get; set; }
 #### DependentGrainsUIds
 
 `DependentGrainsUIds` is a collection (array) of other grains' `UId`s that depend on the submitted grain. This property is useful when developers want to line up grains in a queue.
+
+#### ProcessAttributes
+
+`ProcessAttributes` property is an instance of `ProcessAttributes` with the following three significant properties:
+
+```cs
+public string TypeName { get; set; }
+public bool IsDurable { get; set; } = false;
+public double ExecutionDelayInMilliseconds { get; set; } = 0;
+```
+##### TypeName
+
+`TypeName` is the implemented grain's type name.
+
+##### IsDurable
+
+When set to true, it pushes the grain's execution to the durable context of Digital Silo, and it is useful when the longevity of a task is a mandate.
+
+##### ExecutionDelayInMilliseconds
+
+`ExecutionDelayInMilliseconds` if set to a value greater than zero, it delays the execution of the grain for the given time.
+
+#### A practical example of a configured grain
+
+One of our grain examples in the examples repo is the one that computes Fibonacci Sequences. To have this grain run in Digital Silo, one should submit the following JSON payload to Digital Silo's Gateway Web API via tools like POSTMAN:
+
+```json
+ {
+    "uId" : "83900c8cc4a77",
+    "isDurable": "false",
+    "MaxNumberOfTerms":10,
+    "clientKey":"postman",
+    "processAttributes": {
+        "typeName" : "FibonacciGrain"
+    }
+ }
+```
+`MaxNumberOfTerms` is `FibonacciGrain`'s input value that instructs Digital Silo to produce maximum 10 sequence numbers.
