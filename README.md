@@ -177,7 +177,7 @@ public class RectangularGrainValidator : GrainValidator<RectangularGrain>
 }
 ```
 
-The initial definition of `RectangularGrain` class must be augmented per the following code snippet to accommodate validation:
+A developer must augment the initial definition of `RectangularGrain` class per the following code snippet to accommodate validation:
 
 ```cs
 public class RectangularGrain : Grain<PerimeterResponse>, IValidatorProvider<RectangularGrain>
@@ -187,3 +187,10 @@ public class RectangularGrain : Grain<PerimeterResponse>, IValidatorProvider<Rec
     public IValidator<T> GetValidator() => new RectangularGrainValidator();
 }
 ```
+
+#### A real-world example
+[This Github repository](https://github.com/DigitalSilo/digitalsiloexamples) contains three working Digital Silo grain examples whose source codes are available within the ["src"](https://github.com/DigitalSilo/digitalsiloexamples/tree/main/src) folder in the repo. 
+
+`FibonacciGrain` computes Fibonacci Sequence, `ReverseFibbonacciGrain` computes Fibonacci Sequence in the reverse order, and `WorkerGrain` uses [Bogus library](https://github.com/bchavez/Bogus) to generate some fictitious users' data in the example repo. Please note the associated responses and validators in the examples.
+
+The C# compiler produces three DLLs out of these examples' projects that can be uploaded to Digital Silo's storage to have them integrated. Please continue reading to learn about the storage account where grains are uploaded.
