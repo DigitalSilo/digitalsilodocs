@@ -15,7 +15,9 @@ Digital Silo consists of the following major components:
 
 Gateway Web API is the entry point of the system to receive grains' payloads in JSON format. It has no role in running the business logic encapsulated in the grain. The only task it carries out is to deliver the grains' payloads to the serverless infrastructure for further processing. However, it can manage a virtual queue of submitted grains' payloads as well. Developers can also define the grains' chaining keys in the payloads, and the Gateway can figures out how to line them up in a row to submit to the silo. The subsequent grain's payload in the queue is picked up and processed if its predecessor finishes successfully. Gateway will not send a grain's payload to the serverless part if its predecessor has already failed or terminated.
 
-The serverless infrastructure is the entity that takes care of processing grains statelessly. It can track the progress of grains and resumes their execution from the point where they left off if the grains fail due to any reason. Depending on the deployment pipeline's configuration, the serverless infrastructure can run on a consumption plan or a bit more real-time mode, i.e. premium plan when necessary.
+The serverless infrastructure is the entity that takes care of processing grains statelessly. It can track the progress of grains and resumes their execution from the point where they left off if the grains fail due to any reason. It can also execute grains with delays should such a request is made through the grain's payload.
+
+Depending on the deployment pipeline's configuration, the serverless infrastructure can run on a consumption plan or a bit more real-time mode, i.e. premium plan when necessary.
 
 The SignalR Service provides a real-time communication channel between the client application interested in observing grains' status and the backend progress.
 
@@ -189,8 +191,87 @@ public class RectangularGrain : Grain<PerimeterResponse>, IValidatorProvider<Rec
 ```
 
 #### A real-world example
+
 [This Github repository](https://github.com/DigitalSilo/digitalsiloexamples) contains three working Digital Silo grain examples whose source codes are available within the ["src"](https://github.com/DigitalSilo/digitalsiloexamples/tree/main/src) folder in the repo. 
 
 `FibonacciGrain` computes Fibonacci Sequence, `ReverseFibbonacciGrain` computes Fibonacci Sequence in the reverse order, and `WorkerGrain` uses [Bogus library](https://github.com/bchavez/Bogus) to generate some fictitious users' data in the example repo. Please note the associated responses and validators in the examples.
 
-The C# compiler produces three DLLs out of these examples' projects that can be uploaded to Digital Silo's storage to have them integrated. Please continue reading to learn about the storage account where grains are uploaded.
+The C# compiler produces three DLLs out of these examples' projects that can be uploaded to Digital Silo's storage to have them integrated with the system. Please continue reading to learn about the storage account where grains are uploaded.
+
+#### Next steps
+
+So far, we have learned how to introduce a grain, its processor and validator. Once it's uploaded to a designated storage account, a grain itself becomes an integral part of Digital Silo. In the following sections, we will show you how to:
+
+* Configure a grain
+* Execute a configured grain in Digital Silo
+* Leverage the capabilities of Digital Silo .NET SDK
+
+### Configure a grain
+
+A developer must familiarize themselves with a few grain's properties to configure them properly to put the grain on work. So, let's learn about those properties by taking a look at the base grain definition in the `DigitalSilo.Grain` package:
+
+```cs
+namespace DigitalSilo.Grain
+{
+    public class Grain : IUnique
+    {
+        protected readonly Subject<Grain> _progressSubject;
+        
+        public Grain() => _progressSubject = new Subject<Grain>();
+
+        public string UId { get; set; }
+        public string ClientKey { get; set; }
+        public IEnumerable<string> DependentGrainsUIds { get; set; }
+        public Metadata Metadata { get; set; }
+        public ProcessAttributes ProcessAttributes { get; set; } = new ProcessAttributes();
+        [JsonIgnore]
+        public IObservable<Grain> Progress => _progressSubject.AsObservable();
+    }
+
+    public class Grain<TResponse> : Grain, IRequest<TResponse>
+        where TResponse : Response, new()
+    {
+        public Grain()
+        : base() => ProcessAttributes.Stage = ExecutionStage.Seeded;
+
+        public void OnFinishedProcessing()
+            => _progressSubject.OnNext(this);
+
+        public void OnFinalized()
+            => _progressSubject.OnCompleted();
+
+        public void OnError(Exception exception)
+            => _progressSubject.OnError(exception);
+    }
+}
+
+public class ProcessAttributes
+{
+        public ExecutionStage Stage { get; set; }
+        public string TypeName { get; set; }
+        public bool IsDurable { get; set; } = false;
+        public double ExecutionDelayInMilliseconds { get; set; } = 0;
+        public ResilienceSettings ResilienceSettings { get; set; } = new ResilienceSettings();
+}
+```
+
+The following `Grain` class properties are the most significant to initialize when submitting a grain's payload.
+
+```cs
+public string UId { get; set; }
+public string ClientKey { get; set; }
+public IEnumerable<string> DependentGrainsUIds { get; set; }
+public ProcessAttributes ProcessAttributes { get; set; } 
+```
+
+#### UId
+
+`UId` is A unique string, e.g. a `Guid` dedicated to one and only one grain upon its payload submission.
+
+#### ClientKey
+
+`ClientKey` is a string representing the client application's unique identity. This entry becomes useful when listening to the client's submitted grains' status reported by the backend.
+
+#### DependentGrainsUIds
+
+`DependentGrainsUIds` is a collection (array) of other grains' `UId`s that depend on the submitted grain. This property is useful when developers want to line up grains in a queue.
