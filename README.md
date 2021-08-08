@@ -13,7 +13,7 @@ Digital Silo consists of the following major components:
 
 ## Features
 
-Gateway Web API is the entry point of the system to receive grains' payloads in JSON format. It has no role in running the business logic encapsulated in the grain. The only task it carries out is to deliver the grains' payloads to the serverless infrastructure for further processing. However, it can manage a virtual queue of submitted grains' payloads as well. Developers can also define the grains' chaining keys in the payloads, and the Gateway can figures out how to line them up in a row to submit to the silo. The subsequent grain's payload in the queue is picked up and processed if its predecessor finishes successfully. Gateway will not send a grain's payload to the serverless part if its predecessor has already failed or terminated.
+Gateway Web API is the entry point of the system to receive grains' payloads in JSON format. It has no role in running the business logic encapsulated in the grain. The only task it carries out is to deliver the grains' payloads to the serverless infrastructure for further processing. However, it can manage a virtual queue of submitted grains' payloads as well. Developers can also define the grains' chaining keys in the payloads, and the Gateway can figure out how to line them up in a row to submit to the silo. The subsequent grain's payload in the queue is picked up and processed if its predecessor finishes successfully. Gateway will not send a grain's payload to the serverless part if its predecessor has already failed or terminated.
 
 The serverless infrastructure is the entity that takes care of processing grains statelessly. It can track the progress of grains and resumes their execution from the point where they left off if the grains fail due to any reason. It can also execute grains with delays should such a request is made through the grain's payload.
 
@@ -320,19 +320,53 @@ One of our grain examples in the examples repo is [Fibonacci sequence number gen
 
 ## Integration with Digital Silo
 
-Integration with Digital Silo consists of two steps:
+Integration with Digital Silo consists of the following three steps:
 
 1. Acquiring a daemon Azure AD B2C token
-2. Negotiating and starting listening to signalR
+2. Negotiation and listening to signalR
 3. Making Gateway Web API calls
 
 ### Acquiring a daemon Azure AD B2C token
 
-Please contact Digital Silo for details.
+Please get in touch with Digital Silo for details.
 
-### Negotiating and starting listening to signalR
+### Negotiation and listening to signalR
 
-TBD
+The signalR element in Digital Silo, aka Watchdog, is the crucial component to report grains' responses and statuses to the subscribing client applications. The following URL is available to receive GET requests to have the client app negotiate and subscribe to signalR events:
+
+```url
+https://dsdemowatchdog.azurewebsites.net/api/negotiate
+```
+
+Digital Silo's Azure AD B2C protects the mentioned URL, and developers must also provide the following headers in their GET requests:
+
+```url
+x-ms-signalr-userid
+x-functions-key
+```
+
+**Note 1:** Negotiation URL varies for every deployed instance of the system by Terraform.
+
+**Note 2:** Please acquire the Digital Silo team about using the Azure AD B2C. Therefore a `Bearer` token is required in association with the `Authorization` header.
+
+#### Populating x-ms-signalr-userid
+
+`x-ms-signalr-userid` is the same as the application's client key discussed earlier.
+
+#### Populating x-functions-key
+
+`x-functions-key` will be available after running the deployment Terraform script.
+
+### Responses received via signalR
+
+The signalR client application receives signalR responses in JSON format, consistent with the grain's response object specified by the grain's developer *(derived from the `Response` abstract class mentioned earlier)*.
+
+The events that the signalR reports are either of the following entries:
+
+* onBegin: fired when processing a grain is about to begin
+* onNext: fired when the grain is processed and the system is about to process the next one
+* onError: fired when the grain resulted in an error
+* onCompleted: fired when the grain completes
 
 ### Gateway Web API
 
