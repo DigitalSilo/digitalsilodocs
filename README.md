@@ -45,7 +45,8 @@ A grain is a stateless component that encapsulates a specific business logic tha
 
 ### Development steps
 
-#### Prerequisites 
+#### Prerequisites
+
 The following tools are required to start developing grains:
 Visual Studio 2019 (for Mac or Windows), or Visual Studio Code
 .net core 3.1 and its latest SDK
@@ -64,7 +65,7 @@ where TResponse : Response, new()
 ```
 `TResponse` has to be an instance of the `Response` abstract class defined in the `DigitalSilo.Grain.Abstracts` namespace.
 
-Let's imagine that we want to have the silo compute the perimeter of a rectangular. We will need a grain to define a rectangular and a respective response class where the computed perimeter is stored.
+Let's imagine that we want to have the silo compute the perimeter of a rectangular. We will need grain to define a rectangular and a respective response class where the computed perimeter is stored.
 
 ```cs
 using DigitalSilo.Grain.Abstracts;
@@ -96,6 +97,7 @@ public class RectangularGrain : Grain<PerimeterResponse>
     public Rectangular Rectangular { get; set; }
 }
 ```
+
 #### Implementing grain processor
 
 Processing a grain occurs in a separate class from the grain definition. To implement a processor class, one must derive the processor class from the following abstract class available in `DigitalSilo.Grain.Abstracts.Grain` namespace:
@@ -105,6 +107,7 @@ public abstract class GrainProcessor<TGrain, TResponse> :
 where TGrain : Grain<TResponse>, new()
 where TResponse : Response, new()
 ```
+
 So, the declaration of perimeter calculator class would look like the following example:
 
 ```cs
@@ -114,12 +117,14 @@ public class RectangularPerimeterCalculator : GrainProcessor<RectangularGrain, P
 {
 }
 ```
+
 The following two abstract methods have to be overridden in the derived grain processor class:
 
 ```cs
 protected abstract Task<TResponse> ProcessAsync(TGrain request, CancellationToken cancellationToken);
 protected abstract Task FinalizeAsync();
 ```
+
 `ProcessAsync` is the method that usually carries the business logic, and `FinalizeAsync` is a method that can optionally be implemented. Usually, tasks like closing a network connection, removing unnecessary files, cleanups, etc., would happen in `FinalizeAsync()` method. So, the implementation of `ProcessAsync` method to calculate the rectangular's perimeter would look like the following code snippet:
 
 ```cs
@@ -196,15 +201,12 @@ public class RectangularGrain : Grain<PerimeterResponse>, IValidatorProvider<Rec
 
 `FibonacciGrain` computes Fibonacci Sequence, `ReverseFibbonacciGrain` computes Fibonacci Sequence in the reverse order, and `WorkerGrain` uses [Bogus library](https://github.com/bchavez/Bogus) to generate some fictitious users' data in the example repo. Please note the associated responses and validators in the examples.
 
-The C# compiler produces three DLLs out of these examples' projects that can be uploaded to Digital Silo's storage to have them integrated with the system. Please continue reading to learn about the storage account where grains are uploaded.
+The C# compiler produces three DLLs out of these examples' projects that can be uploaded to Digital Silo's storage for integrating them with the system.
 
-#### Next steps
-
-So far, we have learned how to introduce a grain, its processor and validator. Once it's uploaded to a designated storage account, a grain itself becomes an integral part of Digital Silo. In the following sections, we will show you how to:
+So far, we have learned how to introduce a grain, its processor and validator. Once uploaded to the designated Digital Silo storage account, the grain becomes an integral part of Digital Silo. In the rest of this section, we will show you how to:
 
 * Configure a grain
-* Execute a configured grain in Digital Silo
-* Leverage the capabilities of Digital Silo .NET SDK
+* Have Digital Silo process or run a configured grain
 
 ### Configure a grain
 
@@ -247,15 +249,15 @@ namespace DigitalSilo.Grain
 
 public class ProcessAttributes
 {
-        public ExecutionStage Stage { get; set; }
-        public string TypeName { get; set; }
-        public bool IsDurable { get; set; } = false;
-        public double ExecutionDelayInMilliseconds { get; set; } = 0;
-        public ResilienceSettings ResilienceSettings { get; set; } = new ResilienceSettings();
+    public ExecutionStage Stage { get; set; }
+    public string TypeName { get; set; }
+    public bool IsDurable { get; set; } = false;
+    public double ExecutionDelayInMilliseconds { get; set; } = 0;
+    public ResilienceSettings ResilienceSettings { get; set; } = new ResilienceSettings();
 }
 ```
 
-The following `Grain` class properties are the most significant to initialize when submitting a grain's payload.
+The following `Grain` class properties are the most significant to initialize upon submitting a grain's payload.
 
 ```cs
 public string UId { get; set; }
@@ -274,7 +276,7 @@ public ProcessAttributes ProcessAttributes { get; set; }
 
 #### DependentGrainsUIds
 
-`DependentGrainsUIds` is a collection (array) of other grains' `UId`s that depend on the submitted grain. This property is useful when developers want to line up grains in a queue.
+`DependentGrainsUIds` is a collection (array) of other grains' `UId`s that depend on the submitted grain. This property is valuable when developers want to line up grains in a queue.
 
 #### ProcessAttributes
 
@@ -285,6 +287,7 @@ public string TypeName { get; set; }
 public bool IsDurable { get; set; } = false;
 public double ExecutionDelayInMilliseconds { get; set; } = 0;
 ```
+
 ##### TypeName
 
 `TypeName` is the implemented grain's type name.
@@ -295,11 +298,11 @@ When set to true, it pushes the grain's execution to the durable context of Digi
 
 ##### ExecutionDelayInMilliseconds
 
-`ExecutionDelayInMilliseconds` if set to a value greater than zero, it delays the execution of the grain for the given time.
+`ExecutionDelayInMilliseconds`, if set to a value greater than zero, delays the grain's execution for the given time.
 
 #### A practical example of a configured grain
 
-One of our grain examples in the examples repo is the one that computes Fibonacci Sequences. To have this grain run in Digital Silo, one should submit the following JSON payload to Digital Silo's Gateway Web API via tools like POSTMAN:
+One of our grain examples in the examples repo is [Fibonacci sequence number generator](https://github.com/DigitalSilo/digitalsiloexamples/tree/main/src/DigitalSilo.Fibonacci). To have Digital Silo run this grain and generate 10 numbers, one should submit the following JSON payload to Digital Silo's Gateway Web API by tools like POSTMAN:
 
 ```json
  {
@@ -312,4 +315,132 @@ One of our grain examples in the examples repo is the one that computes Fibonacc
     }
  }
 ```
-`MaxNumberOfTerms` is `FibonacciGrain`'s input value that instructs Digital Silo to produce maximum 10 sequence numbers.
+
+`MaxNumberOfTerms` is the input value of `FibonacciGrain` instructing Digital Silo to produce a maximum of 10 sequence numbers.
+
+## Integration with Digital Silo
+
+Integration with Digital Silo consists of two steps:
+
+1. Acquiring a daemon Azure AD B2C token
+2. Negotiating and starting listening to signalR
+3. Making Gateway Web API calls
+
+### Acquiring a daemon Azure AD B2C token
+
+Please contact Digital Silo for details.
+
+### Negotiating and starting listening to signalR
+
+TBD
+
+### Gateway Web API
+
+Digital Silo Gateway Web API is the entry port to the system that collects grains' payloads to submit them to the serverless infrastructure to execute the grains. [Digital Silo Gateway API's Open API documentation](https://dsdemogatewayapp.azurewebsites.net/index.html) shows that only a handful of APIs is available, making the system integration easy and fun. Developers can choose their favourite programming languages to integrate with Digital Silo Gateway Web API.
+
+### submitGrain POST action
+
+This action collects a JSON payload representing one grain only.
+
+#### Example
+
+```json
+{
+    "uId" : "8900cc8c",
+    "container":"test",
+    "isDurable": "false",
+    "MaxNumberOfTerms":10,
+    "clientKey":"postman",
+    "processAttributes":{
+        "typeName" : "ReverseFibbonacciGrain"
+    }
+ }
+```
+
+### submitGrains POST action
+
+This action collects a JSON payload representing a collection of grains. This POST action becomes handy when submitting a batch of grains is required.
+
+#### Example
+
+```json
+[
+    {
+        "uId" : "12345",
+        "container":"test",
+        "typeName" : "WorkerGrain",
+        "isDurable": "false",
+        "input":10001
+    },
+    {
+        "uId" : "90099",
+        "container":"test",
+        "typeName" : "WorkerGrain",
+        "isDurable": "false",
+        "input":10002
+    },
+    {
+        "uId" : "904444",
+        "container":"test",
+        "typeName" : "WorkerGrain",
+        "isDurable": "false",
+        "input":10003
+    },
+    {
+        "uId" : "18900",
+        "container":"test",
+        "typeName" : "WorkerGrain",
+        "isDurable": "false",
+        "input":10004
+    }
+]
+```
+
+### terminate/{grainUId} GET action
+
+Invoke this GET action to have a running grain terminated. `{grainUId}` is the terminating grain's `UId`. If the system is unable to locate the running grain, it will report an error message.
+
+#### Example
+
+```
+https://dsdemogatewayapp.azurewebsites.net/api/gateway/terminate/18900
+```
+
+### terminate POST action
+
+Invoke this POST action to have a batch of running grains terminated. The request body should represent a string array comprising the UIds of the grains to terminate.
+
+#### Example
+
+```json
+[
+    "12345",
+    "90099",
+    "904444",
+    "18900"
+]
+```
+
+### next/{grainUId} GET action
+
+This action has been reserved for system use only, and its invocation results in adverse situations. Developers must avoid calling this action even though it is available and publicly exposed.
+
+### Gateway API's actions' Responses
+
+Please consult Swagger's document to learn about each Web API call's respective response object. The response object returns a result code which may have one of the values per the following enum:
+
+```cs
+public enum ResultCode : short
+{
+    Unknown = -1,
+    Success,
+    Warning,
+    InvalidObject,
+    Error,
+    Failed,
+    Canceled,
+    Unauthorized
+}
+```
+
+**Important note:** Please note that the response received from Gateway API is not the processing result of the submitted grains as signalR is responsible for communicating such results. Gateway APIs' responses only reflect the results of the operations within the context of Gateway only.
