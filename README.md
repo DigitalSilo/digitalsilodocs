@@ -206,9 +206,9 @@ The C# compiler produces three DLLs out of these examples' projects that can be 
 So far, we have learned how to introduce a grain, its processor and validator. Once uploaded to the designated Digital Silo storage account, the grain becomes an integral part of Digital Silo. In the rest of this section, we will show you how to:
 
 * Configure a grain
-* Have Digital Silo process or run a configured grain
+* Have Digital Silo run a configured grain
 
-### Configure a grain
+### Grain configuration
 
 A developer must familiarize themselves with a few grain's properties to configure them properly to put the grain on work. So, let's learn about those properties by taking a look at the base grain definition in the `DigitalSilo.Grain` package:
 
@@ -328,7 +328,7 @@ Integration with Digital Silo consists of the following three steps:
 
 ### Acquiring a daemon Azure AD B2C token
 
-Please get in touch with Digital Silo for details.
+Please get in touch with Digital Silo team for configuration details.
 
 ### Negotiation and listening to signalR
 
@@ -477,4 +477,12 @@ public enum ResultCode : short
 }
 ```
 
-**Important note:** Please note that the response received from Gateway API is not the processing result of the submitted grains as the Watchdog is responsible for communicating such results via signalR. Gateway APIs' responses only reflect the results of the operations within the context of Gateway.
+**Important note:** Please note that the response received from Gateway API is not the processing result of the submitted grains, as the Watchdog is responsible for communicating such results via signalR. Gateway APIs' responses only reflect the results of the operations within the context of Gateway.
+
+## Infrastructure deployment and key integration areas
+
+
+
+
+
+
