@@ -477,4 +477,4 @@ public enum ResultCode : short
 }
 ```
 
-**Important note:** Please note that the response received from Gateway API is not the processing result of the submitted grains as signalR is responsible for communicating such results. Gateway APIs' responses only reflect the results of the operations within the context of Gateway only.
+**Important note:** Please note that the response received from Gateway API is not the processing result of the submitted grains as the Watchdog is responsible for communicating such results via signalR. Gateway APIs' responses only reflect the results of the operations within the context of Gateway.
