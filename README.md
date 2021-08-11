@@ -479,10 +479,18 @@ public enum ResultCode : short
 
 **Important note:** Please note that the response received from Gateway API is not the processing result of the submitted grains, as the Watchdog is responsible for communicating such results via signalR. Gateway APIs' responses only reflect the results of the operations within the context of Gateway.
 
-## Infrastructure deployment and key integration areas
+## Infrastructure post-deployment integration points
 
+[The Terraform script]((https://github.com/DigitalSilo/digitalsilo/tree/master/infrastructure) ) produces a few integration connection strings when running in the build pipeline. 
 
+Those connection strings are the key integration parameters to client libraries, e.g. Digital Silo's SDK or apps, e.g. UI for submitting grains' JSON payloads, uploading grains' DLLs and listening to Watchdog events. 
 
+Now, let's find out how to obtain these integration connection strings. The following screenshot depicts an instance of Digital Silo deployed on our Azure subscription.
 
+![Digital Silo on Azure](assets/demodigitalsilo.jpg)
 
+The following services are the ones that we will need for integration:
 
+* **dsdemowatchdog** Function App, which is an HTTP-triggered Azure Function App designated for signalR negotiation. Its URL is one of the integration parameters.
+* **dsdemouserapp** is the storage account to upload developed grains's DLLs whose connection string with write access is another integration parameter.
+* **dsdemogatewayapp** is the Gateway Web API that collects grains' JSON payloads as described earlier. Its URL is the last integration parameter that we need.
