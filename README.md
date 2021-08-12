@@ -491,6 +491,10 @@ Now, let's find out how to obtain these integration connection strings. The foll
 
 The following services are the ones that we will need for integration:
 
-* **dsdemowatchdog** Function App, which is an HTTP-triggered Azure Function App designated for signalR negotiation. Its URL is one of the integration parameters.
+* **dsdemowatchdog** Function App, which is an HTTP-triggered Azure Function App designated for signalR negotiation. Its URL and the function key are the integration parameters.
 * **dsdemouserapp** is the storage account to upload developed grains's DLLs whose connection string with write access is another integration parameter.
 * **dsdemogatewayapp** is the Gateway Web API that collects grains' JSON payloads as described earlier. Its URL is the last integration parameter that we need.
+
+### Integration examples
+
+[Digital Silo .NET SDK's](https://github.com/DigitalSilo/digitalsilosdk) integration test project and the [UI app that shows the progress of grains](https://github.com/DigitalSilo/digitalsiloui) are the perfect integration examples that clarify the integration. These repositories are available to Digital Silo clients.
