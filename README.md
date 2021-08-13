@@ -1,6 +1,6 @@
 # Digital Silo
 
-Digital Silo collects stateless tasks, aka **Grains**, and executes them in a scalable serverless environment on the Microsoft Azure Cloud technology. It accelerates the steps of making an application serverless-ready by eliminating the burden of infrastructure-driven implementation and letting developers concentrate on coding their business logic.
+Digital Silo collects stateless tasks, aka **Grains**, and executes them in an asynchronous scalable serverless environment on the Microsoft Azure Cloud technology. It accelerates the steps of making an application serverless-ready by eliminating the burden of infrastructure-driven implementation and letting developers concentrate on coding their business logic.
 
 ## Major components in Digital Silo
 
@@ -31,7 +31,7 @@ The following diagram depicts the infrastructure and the major components of Dig
 
 ### Environment
 
-A development environment is required to be able to develop and test the grains. The development environment is the entire infrastructure of Digital Silo hosted on Azure and provisioned by a Terraform script found [here](https://github.com/DigitalSilo/digitalsilo/tree/master/infrastructure). The service plans and the capacity of Azure services are at their minimal costs in the Terraform script. Should additional horsepower is required, one can incorporate higher-level SKUs in the Terraform script.
+A development environment is required to develop and test the grains. The development environment is the entire infrastructure of Digital Silo hosted on Azure and provisioned by a Terraform script found [here](https://github.com/DigitalSilo/digitalsilo/tree/master/infrastructure). The service plans and the capacity of Azure services are at their minimal costs in the Terraform script. Should additional horsepower is required, one can incorporate higher-level SKUs in the Terraform script.
 
 #### Silo, the processing component
 
@@ -498,3 +498,10 @@ The following services are the ones that we will need for integration:
 ### Integration examples
 
 [Digital Silo .NET SDK's](https://github.com/DigitalSilo/digitalsilosdk) integration test project and the [UI app that shows the progress of grains](https://github.com/DigitalSilo/digitalsiloui) are the perfect integration examples that clarify the integration. These repositories are available to Digital Silo clients.
+## The cycle of adding grains to the silo
+
+The following diagram depicts the process of adding grain to the silo:
+
+![Promoting grains](assets/Grain%20Promotion.svg)
+
+The same diagram applies to removing grains from the silo.
