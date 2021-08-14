@@ -21,6 +21,8 @@ Depending on the deployment pipeline's configuration, the serverless infrastruct
 
 The SignalR Service provides a real-time communication channel between the client application interested in observing grains' status and the backend progress.
 
+Developers traditionally introduce GET and POST actions in their web API implementation to communicate with the backend. The number of such GET and POST actions depends on the complexity of the application's business logic, and it can well grow to tens of web actions, no matter how they segregate them and introduce distinctive microservices. Digital Silo's pattern is quite different, and there is only one POST request collecting grains' JSON payloads. The developers can focus only on developing their grains' JSON payloads without introducing new POST actions.
+
 ### High-Level Architecture diagram
 
 The following diagram depicts the infrastructure and the major components of Digital Silo:
@@ -31,13 +33,13 @@ The following diagram depicts the infrastructure and the major components of Dig
 
 ### Environment
 
-A development environment is required to develop and test the grains. The development environment is the entire infrastructure of Digital Silo hosted on Azure and provisioned by a Terraform script found [here](https://github.com/DigitalSilo/digitalsilo/tree/master/infrastructure). The service plans and the capacity of Azure services are at their minimal costs in the Terraform script. Should additional horsepower is required, one can incorporate higher-level SKUs in the Terraform script.
+To develop and test grains, we will need a full-blown Digital Silo infrastructure on Azure provisioned by a Terraform script found [here](https://github.com/DigitalSilo/digitalsilo/tree/master/infrastructure). The service plans and the capacity of Azure services are at their minimal costs in the Terraform script. Should additional horsepower is required, one can incorporate higher-level SKUs in the Terraform script.
 
 #### Silo, the processing component
 
-The Terraform script provisions the entire Digital Silo infrastructure just within a few minutes on Azure. Once the infrastructure is ready, a storage account to retain the developed grains' DLLs becomes available to the outside world. The infrastructure knows where to fetch and download the developed grains' DLLs from the storage and turn them into an integral part of the silo's infrastructure. At this point, the grains are ready and fully engaged in executing the business logic after receiving their respective payloads via Gateway.
+The Terraform script provisions the entire Digital Silo infrastructure just within a few minutes on Azure. Once the infrastructure is ready, a storage account becomes available to retain the developed grains' DLLs. The infrastructure knows where to fetch and download the developed grains' DLLs from the storage and turn them into an integral part of the silo's infrastructure. At this point, the grains are ready and fully engaged in executing the business logic after receiving their respective payloads via Gateway.
 
-Optionally a client application in C# or typescript may subscribe to the provisioned signalR Service instance to listen to grains' progress status.
+Optionally a client application in C# or typescript may subscribe to the provisioned SignalR Service instance to listen to grains' progress status.
 
 #### Grain
 
@@ -48,12 +50,15 @@ A grain is a stateless component that encapsulates a specific business logic tha
 #### Prerequisites
 
 The following tools are required to start developing grains:
-Visual Studio 2019 (for Mac or Windows), or Visual Studio Code
-.net core 3.1 and its latest SDK
-Digital Silo instance running on Azure that the provided Terraform script can provision
-Digital Silo's `DigitalSilo.Grain` assembly is available to download from [this artifacts feed](https://pkgs.dev.azure.com/umplify/Grain/_packaging/DigitalSilo/nuget/v3/index.json)
-Xunit framework to compose unit tests and integration tests
-An optional [Xunit extension library](https://www.nuget.org/packages/Xunit.Microsoft.DependencyInjection/) is available here to help leverage dependency injection capability in writing Xunit integration tests
+
+* Visual Studio 2019 (for Mac or Windows), or Visual Studio Code
+* A Windows 10, Linux or MacBook computer
+* .net core 3.1 and its latest SDK
+* Digital Silo instance running on Azure
+* Digital Silo's `DigitalSilo.Grain` assembly available to download from [this artifacts feed](https://pkgs.dev.azure.com/umplify/Grain/_packaging/DigitalSilo/nuget/v3/index.json)
+* Xunit framework to compose unit tests and integration tests
+* An optional [Xunit extension library](https://www.nuget.org/packages/Xunit.Microsoft.DependencyInjection/) to help leverage dependency injection capability in writing Xunit integration tests
+* CI/CD pipelines [available here](https://github.com/DigitalSilo/digitalsilo/tree/master/build) to download
 
 #### Introducing a grain
 
@@ -63,9 +68,10 @@ After adding a reference to the `DigitalSilo.Grain` package, the following class
 public class Grain<TResponse> : Grain, IRequest<TResponse>
 where TResponse : Response, new()
 ```
+
 `TResponse` has to be an instance of the `Response` abstract class defined in the `DigitalSilo.Grain.Abstracts` namespace.
 
-Let's imagine that we want to have the silo compute the perimeter of a rectangular. We will need grain to define a rectangular and a respective response class where the computed perimeter is stored.
+Let's imagine that we want to have Digital Silo compute the perimeter of a rectangular. We will need grain to define a rectangular and a respective response class where the computed perimeter is stored.
 
 ```cs
 using DigitalSilo.Grain.Abstracts;
@@ -151,6 +157,7 @@ Step 1) The grain's validator class should inherit the following abstract class:
 using DigitalSilo.Grain.Abstracts.Grain.Validators;
 public abstract class GrainValidator<TGrain>{ ... }
 ```
+
 Step 2) The grain class should implement the following interface:
 
 ```cs
@@ -197,7 +204,7 @@ public class RectangularGrain : Grain<PerimeterResponse>, IValidatorProvider<Rec
 
 #### A real-world example
 
-[This Github repository](https://github.com/DigitalSilo/digitalsiloexamples) contains three working Digital Silo grain examples whose source codes are available within the ["src"](https://github.com/DigitalSilo/digitalsiloexamples/tree/main/src) folder in the repo. 
+[This Github repository](https://github.com/DigitalSilo/digitalsiloexamples) contains three working Digital Silo grain examples whose source codes are available within the ["src"](https://github.com/DigitalSilo/digitalsiloexamples/tree/main/src) folder in the repo.
 
 `FibonacciGrain` computes Fibonacci Sequence, `ReverseFibbonacciGrain` computes Fibonacci Sequence in the reverse order, and `WorkerGrain` uses [Bogus library](https://github.com/bchavez/Bogus) to generate some fictitious users' data in the example repo. Please note the associated responses and validators in the examples.
 
@@ -302,7 +309,7 @@ When set to true, it pushes the grain's execution to the durable context of Digi
 
 #### A practical example of a configured grain
 
-One of our grain examples in the examples repo is [Fibonacci sequence number generator](https://github.com/DigitalSilo/digitalsiloexamples/tree/main/src/DigitalSilo.Fibonacci). To have Digital Silo run this grain and generate 10 numbers, one should submit the following JSON payload to Digital Silo's Gateway Web API by tools like POSTMAN:
+One of our grain examples in the examples repo is [Fibonacci sequence number generator](https://github.com/DigitalSilo/digitalsiloexamples/tree/main/src/DigitalSilo.Fibonacci). To have Digital Silo run this grain and generate ten numbers, one should submit the following JSON payload to Digital Silo's Gateway Web API by tools like POSTMAN:
 
 ```json
  {
@@ -323,16 +330,16 @@ One of our grain examples in the examples repo is [Fibonacci sequence number gen
 Integration with Digital Silo consists of the following three steps:
 
 1. Acquiring a daemon Azure AD B2C token
-2. Negotiation and listening to signalR
+2. Negotiation and listening to SignalR
 3. Making Gateway Web API calls
 
 ### Acquiring a daemon Azure AD B2C token
 
-Please get in touch with Digital Silo team for configuration details.
+Please get in touch with the Digital Silo team for configuration details.
 
-### Negotiation and listening to signalR
+### Negotiation and listening to SignalR
 
-The signalR element in Digital Silo, aka Watchdog, is the crucial component to report grains' responses and statuses to the subscribing client applications. The following URL is available to receive GET requests to have the client app negotiate and subscribe to signalR events:
+The SignalR element in Digital Silo, aka Watchdog, is the crucial component to report grains' responses and statuses to the subscribing client applications. The following URL is available to receive GET requests to have the client app negotiate and subscribe to SignalR events:
 
 ```url
 https://dsdemowatchdog.azurewebsites.net/api/negotiate
@@ -357,11 +364,11 @@ x-functions-key
 
 `x-functions-key` will be available after running the deployment Terraform script.
 
-### Responses received via signalR
+### Responses received via SignalR
 
-The signalR client application receives signalR responses in JSON format, consistent with the grain's response object specified by the grain's developer *(derived from the `Response` abstract class mentioned earlier)*.
+The SignalR client application receives SignalR responses in JSON format, consistent with the grain's response object specified by the grain's developer *(derived from the `Response` abstract class mentioned earlier)*.
 
-The events that the signalR reports are either of the following entries:
+The events that the SignalR reports are either of the following entries:
 
 * onBegin: fired when processing a grain is about to begin
 * onNext: fired when the grain is processed and the system is about to process the next one
@@ -477,7 +484,7 @@ public enum ResultCode : short
 }
 ```
 
-**Important note:** Please note that the response received from Gateway API is not the processing result of the submitted grains, as the Watchdog is responsible for communicating such results via signalR. Gateway APIs' responses only reflect the results of the operations within the context of Gateway.
+**Important note:** Please note that the response received from Gateway API is not the processing result of the submitted grains, as the Watchdog is responsible for communicating such results via SignalR. Gateway APIs' responses only reflect the results of the operations within the context of Gateway.
 
 ## Infrastructure post-deployment integration points
 
@@ -491,13 +498,14 @@ Now, let's find out how to obtain these integration connection strings. The foll
 
 The following services are the ones that we will need for integration:
 
-* **dsdemowatchdog** Function App, which is an HTTP-triggered Azure Function App designated for signalR negotiation. Its URL and the function key are the integration parameters.
-* **dsdemouserapp** is the storage account to upload developed grains's DLLs whose connection string with write access is another integration parameter.
+* **dsdemowatchdog** Function App, which is an HTTP-triggered Azure Function App designated for SignalR negotiation. Its URL and the function key are the integration parameters.
+* **dsdemouserapp** is the storage account to upload developed grainss' DLLs whose connection string with write access is another integration parameter.
 * **dsdemogatewayapp** is the Gateway Web API that collects grains' JSON payloads as described earlier. Its URL is the last integration parameter that we need.
 
 ### Integration examples
 
 [Digital Silo .NET SDK's](https://github.com/DigitalSilo/digitalsilosdk) integration test project and the [UI app that shows the progress of grains](https://github.com/DigitalSilo/digitalsiloui) are the perfect integration examples that clarify the integration. These repositories are available to Digital Silo clients.
+
 ## The cycle of adding grains to the silo
 
 The following diagram depicts the process of adding grain to the silo:
