@@ -1,5 +1,9 @@
 # Digital Silo
 
+**Sep 1, 2021 . 15 minutes to read**
+
+**By [Arash Sabet](https://github.com/Arash-Sabet)**
+
 Digital Silo collects stateless tasks, aka **Grains**, and executes them in an asynchronous scalable serverless environment on the Microsoft Azure Cloud technology. It accelerates the steps of making an application serverless-ready by eliminating the burden of infrastructure-driven implementation and letting developers concentrate on coding their business logic.
 
 ## Major components in Digital Silo
