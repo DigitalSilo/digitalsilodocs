@@ -541,4 +541,4 @@ The UI's main page consists of the following tabs:
 
 ## Logging in Digital Silo
 
-Digital Silo leverages Azure Application Insights to log its operation details, failures and errors. The Terraform script provisions an instance of Application Insights, and it becomes available on the Azure portal to query and search.
+Digital Silo leverages Azure Application Insights to log its operation details, failures, and errors. The Terraform script provisions an instance of Application Insights, and it becomes available on the Azure portal to query and search.
