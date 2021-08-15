@@ -517,3 +517,28 @@ The following diagram depicts the process of adding grain to the silo:
 ![Promoting grains](assets/Grain%20Promotion.svg)
 
 The same diagram applies to removing grains from the silo.
+
+### The UI to display grains' progress
+
+We have prepared an open-source UI to display the progress of processing grains in Digital Silo. Its source code is available in [this git repo](https://github.com/DigitalSilo/digitalsiloui), and a demo version of [Digital Silo's UI is operational here](https://ambitious-mushroom-0cf93851e.azurestaticapps.net).
+
+The UI pops up a dialog box for the very first time to prompt the users to enter the following key entries:
+
+![Digital Silo UI settings](/assets/UISettings.jpg)
+
+* URL: The URL of Watchdog according to the names provided to Terraform during provisioning
+* Access key: Watchdog's access key (Function Key), which will be available on Azure after provisioning
+* Client key: This key must be consistent with the client key of the application that submits grains' payloads to Gateway, or the grains' progress will not be captured and displayed in real-time.
+
+The UI's main page consists of the following tabs:
+
+![Digital Silo UI tabs](/assets/UITabs.jpg)
+
+* Seeded grains tab to display the submitted grains payloads and ready to process
+* In-progress grains tab to display the grains payloads that are in progress
+* Failed grains tab to display the list of grains payloads that failed
+* Completed grains tab to display the list of successfully processed grains payloads
+
+## Logging in Digital Silo
+
+Digital Silo leverages Azure Application Insights to log its operation details, failures and errors. The Terraform script provisions an instance of Application Insights, and it becomes available on the Azure portal to query and search.
