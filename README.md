@@ -1,3 +1,5 @@
+![](https://digitalsilo.io/assets/images/logos/logo.png)
+
 # Digital Silo
 
 > **Sep 1, 2021 . 15 minutes to read**
