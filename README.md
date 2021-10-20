@@ -547,4 +547,4 @@ Digital Silo leverages Azure Application Insights to log its operation details, 
 
 ## The product's website
 
-Please visit [https://digitalsilo.io](https://digitalsilo.io) for further information.
+Please visit [the product's website](https://digitalsilo.io) for further information.
