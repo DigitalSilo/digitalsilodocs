@@ -1,6 +1,6 @@
-![Digital Silo's logo](https://digitalsilo.io/assets/images/logos/logo.png)
-
 # Digital Silo documentation
+
+![Digital Silo's logo](https://digitalsilo.io/assets/images/logos/logo.png)
 
 > **Sep 1, 2021 . 15 minutes to read**
 > 
