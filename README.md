@@ -1,4 +1,4 @@
-![](https://digitalsilo.io/assets/images/logos/logo.png)
+![Digital Silo's logo](https://digitalsilo.io/assets/images/logos/logo.png)
 
 # Digital Silo documentation
 
