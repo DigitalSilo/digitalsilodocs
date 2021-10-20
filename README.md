@@ -541,6 +541,10 @@ The UI's main page consists of the following tabs:
 * Failed grains tab to display the list of grains payloads that failed
 * Completed grains tab to display the list of successfully processed grains payloads
 
-## Logging in Digital Silo
+## Logging
 
 Digital Silo leverages Azure Application Insights to log its operation details, failures, and errors. The Terraform script provisions an instance of Application Insights, and it becomes available on the Azure portal to query and search.
+
+## The product's website
+
+Please visit https://digitalsilo.io for further information.
