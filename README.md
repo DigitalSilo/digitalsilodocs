@@ -1,6 +1,6 @@
 ![](https://digitalsilo.io/assets/images/logos/logo.png)
 
-# Digital Silo
+# Digital Silo documentation
 
 > **Sep 1, 2021 . 15 minutes to read**
 > 
